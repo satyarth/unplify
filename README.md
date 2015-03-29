@@ -1,5 +1,11 @@
 Tries to make images vaguely resemble the album art for [Unknown Pleasures](http://en.wikipedia.org/wiki/Unknown_Pleasures).
 
+## Example
+
+![input](image.jpg)
+
+![output](out.png)
+
 ## Usage
 ```
 git clone https://github.com/satyarth/unplify.git
