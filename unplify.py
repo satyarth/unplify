@@ -16,8 +16,8 @@ bg_color = (0, 0, 0)
 scale = int(args.scale)
 
 def offset((r, g, b)):
-	intensity = r + g + b
-	return intensity/scale
+	lightness = r + g + b
+	return lightness/scale
 
 def invert((r, g, b)):
 	return (255-r,255-g,255-b)
