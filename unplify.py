@@ -1,57 +1,46 @@
-import Image, ImageDraw, ImageFilter
+try:
+	import Image
+except ImportError:
+	from PIL import Image
 import argparse
+import svgwrite
+
+vspace = 30
+sampling_frequency = 2
+scale = 0.5
+scale_height = 10
+
+def offset(pixels):
+	r, g, b = pixels[0], pixels[1], pixels[2]
+	lightness = r + g + b
+	return lightness/scale_height
+
+def get_line(y):
+	line = []
+	for x in range(0, img.size[0], sampling_frequency):
+			line.append([(x, y-offset(pixels[x,y])),pixels[x,y]])
+	return line
 
 p = argparse.ArgumentParser(description="Make an image look like the album art for 'Unknown Pleasures' by Joy Division")
 p.add_argument("image", help="input image file")
 p.add_argument("-o", "--output", default='out.png', help="output image file, defaults to 'out.png'")
-p.add_argument("-y", "--line_separation", default=6, help="Default separation between horizontal lines")
-p.add_argument("-x", "--sampling_frequency", default=1, help="How often the image is sampled (horizontally)")
-p.add_argument("-s", "--scale", default=20, help="Scale of the offset")
-p.add_argument("-m", "--monochrome", default='n', help="Draw lines as white?")
 args = p.parse_args()
 
-line_separation = int(args.line_separation)
-sampling_frequency = int(args.sampling_frequency)
-bg_color = (0, 0, 0)
-scale = int(args.scale)
+img = Image.open(args.image)
+img.convert('RGBA')
+pixels = img.load()
 
-def offset((r, g, b)):
-	lightness = r + g + b
-	return lightness/scale
+lines = []
+for y in range(0, img.size[1], vspace):
+	lines.append(get_line(y))
 
-def invert((r, g, b)):
-	return (255-r,255-g,255-b)
-
-def draw_chain(chain):
-	start_point = chain[0]
-	for end_point in chain[1:]:
-		draw.line(start_point[0] + end_point[0], fill = (255,255,255) if args.monochrome == 'y' else start_point[1])
+dwg = svgwrite.Drawing('test.svg', profile='full', size=(int(img.size[0]*scale), int(img.size[1]*scale)))
+dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), rx=None, ry=None, fill='#222'))
+for line in lines:
+	start_point = line[0]
+	for end_point in line[1:]:
+		dwg.add(dwg.line(start = (start_point[0][0]*scale, start_point[0][1]*scale), end = (end_point[0][0]*scale, end_point[0][1]*scale), stroke='rgb' + str(start_point[1]) ))
 		start_point = end_point
 
-def get_chain(y):
-	chain = []
-	for x in range(0, img.size[0], sampling_frequency):
-			chain.append([(x, y-offset(pixels[x,y])),pixels[x,y]])
-			# chain.append([(x, y-offset(edgy_pixels[x,y])),pixels[x,y]])
-	return chain
 
-def get_chains():
-	chains = []
-	for y in range(0, img.size[1], line_separation):
-		chains.append(get_chain(y))
-	return chains
-
-img = Image.open(args.image)
-img = img.convert('RGB')
-edges = img.filter(ImageFilter.FIND_EDGES)
-pixels = img.load()
-edgy_pixels = edges.load()
-new = Image.new('RGBA', img.size, bg_color)
-
-chains = get_chains()
-draw = ImageDraw.Draw(new)
-for chain in chains:
-	draw_chain(chain)
-del draw
-
-new.save(args.output)
+dwg.save()
