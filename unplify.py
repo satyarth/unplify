@@ -5,18 +5,14 @@ except ImportError:
 import argparse
 import svgwrite
 
-vspace = 20
-sampling_frequency = 2
-scale_height = 7
-
 def offset(pixels):
 	r, g, b = pixels[0], pixels[1], pixels[2]
 	lightness = r + g + b
-	return lightness/scale_height
+	return lightness*args.peakiness
 
 def get_line(y):
 	line = []
-	for x in range(0, img.size[0], sampling_frequency):
+	for x in range(0, img.size[0], args.sampling_frequency):
 			line.append([(x, y-offset(pixels[x,y])),pixels[x,y]])
 	return line
 
@@ -24,6 +20,9 @@ p = argparse.ArgumentParser(description="Make an image look like the album art f
 p.add_argument("image", help="input image file")
 p.add_argument("-o", "--output", default='out.svg', help="output image file, defaults to 'out.png'")
 p.add_argument("-s", "--scale", type=float, default='1', help="scale the output with respect to the input")
+p.add_argument("-v", "--vspace", type=int, default='20', help="vertical spacing between lines (in pixels)")
+p.add_argument("-f", "--sampling_frequency", type=int, default='1', help="how frequently the imput image is sampled (in pixels)")
+p.add_argument("-p", "--peakiness", type=float, default='0.08', help="scale the 'peaks' in the output image")
 args = p.parse_args()
 
 img = Image.open(args.image)
@@ -31,7 +30,7 @@ img.convert('RGBA')
 pixels = img.load()
 
 lines = []
-for y in range(0, img.size[1], vspace):
+for y in range(0, img.size[1], args.vspace):
 	lines.append(get_line(y))
 
 dwg = svgwrite.Drawing(args.output, profile='full', size=(int(img.size[0]*args.scale), int(img.size[1]*args.scale)))
