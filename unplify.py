@@ -5,10 +5,10 @@ except ImportError:
 import argparse
 import svgwrite
 
-vspace = 30
+vspace = 20
 sampling_frequency = 2
-scale = 0.5
-scale_height = 10
+scale = 1
+scale_height = 7
 
 def offset(pixels):
 	r, g, b = pixels[0], pixels[1], pixels[2]
@@ -23,7 +23,7 @@ def get_line(y):
 
 p = argparse.ArgumentParser(description="Make an image look like the album art for 'Unknown Pleasures' by Joy Division")
 p.add_argument("image", help="input image file")
-p.add_argument("-o", "--output", default='out.png', help="output image file, defaults to 'out.png'")
+p.add_argument("-o", "--output", default='out.svg', help="output image file, defaults to 'out.png'")
 args = p.parse_args()
 
 img = Image.open(args.image)
@@ -34,7 +34,7 @@ lines = []
 for y in range(0, img.size[1], vspace):
 	lines.append(get_line(y))
 
-dwg = svgwrite.Drawing('test.svg', profile='full', size=(int(img.size[0]*scale), int(img.size[1]*scale)))
+dwg = svgwrite.Drawing(args.output, profile='full', size=(int(img.size[0]*scale), int(img.size[1]*scale)))
 dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), rx=None, ry=None, fill='#222'))
 for line in lines:
 	start_point = line[0]
