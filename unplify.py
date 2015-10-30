@@ -33,11 +33,15 @@ lines = []
 for y in range(0, img.size[1], args.vspace):
 	lines.append(get_line(y))
 
-dwg = svgwrite.Drawing(args.output, profile='full', size=(int(img.size[0]*args.scale), int(img.size[1]*args.scale)))
-dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), rx=None, ry=None, fill='#222'))
+dwg = svgwrite.Drawing(args.output, profile='full',
+									size=(int(img.size[0]*args.scale), int(img.size[1]*args.scale)))
+
+dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), rx=None, ry=None, fill='#000'))
 for line in lines:
 	start_point = line[0]
 	for end_point in line[1:]:
-		dwg.add(dwg.line(start = (start_point[0][0]*args.scale, start_point[0][1]*args.scale), end = (end_point[0][0]*args.scale, end_point[0][1]*args.scale), stroke='rgb' + str(start_point[1]) ))
+		dwg.add(dwg.line(start = (start_point[0][0]*args.scale, start_point[0][1]*args.scale),
+						 end = (end_point[0][0]*args.scale, end_point[0][1]*args.scale),
+						 stroke='rgb' + str(start_point[1]) ))
 		start_point = end_point
 dwg.save()
